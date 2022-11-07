@@ -1,15 +1,15 @@
 import hashlib
 import os
-from typing import Any, Optional
-import uuid
-from fastapi import Form, File, UploadFile, FastAPI, Depends
-from pydantic import BaseModel, Field
 import subprocess
+from typing import Optional
+
+from fastapi import FastAPI, File, Form, UploadFile, Request
 
 app = FastAPI()
 
 
 DEFAULT_TIMEOUT = 300
+TOKEN = os.environ['TOKEN']
 
 EXECUTABLE_PATH = os.path.join(
     os.path.dirname(os.path.abspath(__file__)),
@@ -43,6 +43,13 @@ def run_executable_program(executable: str, args:tuple, timeout: int = DEFAULT_T
         completed_process = subprocess.run([f'{executable}'], capture_output=True, timeout=timeout)
     return completed_process.returncode, completed_process.stdout, completed_process.stderr
 
+
+def verify_token(request: Request) -> bool:
+    
+    user_token = request.headers.get('token')
+
+    return user_token and user_token == TOKEN
+    
 
 @app.post("/api/send_job")
 async def handle_job_send(
