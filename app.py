@@ -3,7 +3,7 @@ import os
 import subprocess
 from typing import Optional
 
-from fastapi import FastAPI, File, Form, UploadFile, Request
+from fastapi import FastAPI, File, Form, UploadFile, Request, Depends, Response
 
 app = FastAPI()
 
@@ -49,15 +49,23 @@ def verify_token(request: Request) -> bool:
     user_token = request.headers.get('token')
 
     return user_token and user_token == TOKEN
-    
+
+
+@app.get('/ping')
+async def ping():
+    return {'message': 'pong'}
+
 
 @app.post("/api/send_job")
 async def handle_job_send(
+    is_auth: bool = Depends(verify_token),
     name: Optional[str] = Form(None),
     executable_type: str = Form(...),
     executable: UploadFile = File(...),
     args: Optional[str] = Form(None)
 ):
+    if is_auth:
+        return Response(status_code=401)
 
     hashsum, save_path = save_executable(executable)
 
