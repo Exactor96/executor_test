@@ -36,8 +36,6 @@ def save_executable(file):
 
 
 def run_executable_program(executable: str, args:tuple, timeout: int = DEFAULT_TIMEOUT):
-    print(args)
-    print(type(args))
     if args:
         completed_process = subprocess.run([f'{executable}', *args], capture_output=True, timeout=timeout)
     else:
@@ -69,8 +67,6 @@ async def handle_job_send(
         return Response(status_code=401)
 
     hashsum, save_path = save_executable(executable)
-    print(args)
-
     if executable_type == 'program':
         exit_code, stdout, stderr = run_executable_program(save_path, args)
 
